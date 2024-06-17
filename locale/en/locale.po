@@ -1,0 +1,2 @@
+msgid "plugins.importexport.simplexml.cliUsage"
+msgstr "Usage: {$scriptName} {$pluginName} [csvFileName] [journalId]"
