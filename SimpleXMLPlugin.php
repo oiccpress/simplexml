@@ -8,15 +8,18 @@
  *
  */
 
- namespace APP\plugins\importexport\simplexml;
+namespace APP\plugins\importexport\simplexml;
 
 use APP\core\Application;
+use APP\plugins\importexport\simplexml\elements\IssueElement;
 use APP\template\TemplateManager;
 use PKP\core\JSONMessage;
 use PKP\file\TemporaryFileManager;
 use PKP\plugins\GenericPlugin;
  use PKP\plugins\Hook;
+use PKP\plugins\importexport\native\PKPNativeImportExportCLIDeployment;
 use PKP\plugins\ImportExportPlugin;
+use PKP\plugins\PluginRegistry;
 
  class SimpleXMLPlugin extends ImportExportPlugin {
 
@@ -133,7 +136,7 @@ use PKP\plugins\ImportExportPlugin;
                     throw new \Exception('CSRF mismatch!');
                 }
                 $temporaryFilePath = $this->getImportedFilePath($request->getUserVar('temporaryFileId'), $user);
-                [$filter, $xmlString] = $this->getImportFilter($temporaryFilePath);
+                
                 $result = $this->getImportTemplateResult($filter, $xmlString, $this->getDeployment(), $templateMgr);
 
                 $this->result = $result;
@@ -146,7 +149,71 @@ use PKP\plugins\ImportExportPlugin;
 
     public function executeCLI($scriptName, &$args)
     {
-        // TODO?
+
+        $contextDao = Application::getContextDAO();
+        $cliDeployment = new PKPNativeImportExportCLIDeployment($scriptName, $args);
+
+        $contextPath = $cliDeployment->contextPath;
+        $context = $contextDao->getByPath($contextPath);
+
+        if (!$context) {
+            if ($contextPath != '') {
+                $this->cliToolkit->echoCLIError(__('plugins.importexport.common.error.unknownContext', ['contextPath' => $contextPath]));
+            }
+            $this->usage($scriptName);
+            return true;
+        }
+
+        PluginRegistry::loadCategory('pubIds', true, $context->getId());
+
+        $xmlFile = $cliDeployment->xmlFile;
+        if ($xmlFile && $this->isRelativePath($xmlFile)) {
+            $xmlFile = PWD . '/' . $xmlFile;
+        }
+
+        switch ($cliDeployment->command) {
+            case 'import':
+                $user = Application::get()->getRequest()->getUser();
+
+                if (!$user) {
+                    $this->cliToolkit->echoCLIError(__('plugins.importexport.native.error.unknownUser'));
+                    $this->usage($scriptName);
+                    return true;
+                }
+
+                if (!file_exists($xmlFile)) {
+                    $this->cliToolkit->echoCLIError(__('plugins.importexport.common.export.error.inputFileNotReadable', ['param' => $xmlFile]));
+
+                    $this->usage($scriptName);
+                    return true;
+                }
+
+                $issues = $this->readFile($xmlFile);
+                $issues->save( $context );
+
+                $this->cliToolkit->getCLIImportResult($deployment);
+                $this->cliToolkit->getCLIProblems($deployment);
+                return true;
+            default:
+                $this->usage($scriptName);
+                return true;
+        }
+    }
+
+    public function readFile($xmlFile) {
+        $dom = new \DOMDocument();
+        $dom->load($xmlFile);
+        if($dom->getRootNode()->nodeName == 'issue') {
+            $issue = new IssueElement($dom->getRootNode());
+            return $issue;
+        } else {
+            foreach($dom->childNodes as $ch) {
+                if($ch->nodeName == "issue") {
+                    $issue = new IssueElement($ch);
+                    return $issue;
+                }
+            }
+        }
     }
 
     public function usage($scriptName)
