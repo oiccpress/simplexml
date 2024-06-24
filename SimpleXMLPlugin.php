@@ -164,7 +164,7 @@ use PKP\plugins\PluginRegistry;
             return true;
         }
 
-        PluginRegistry::loadCategory('pubIds', true, $context->getId());
+        PluginRegistry::loadAllPlugins();
 
         $xmlFile = $cliDeployment->xmlFile;
         if ($xmlFile && $this->isRelativePath($xmlFile)) {
@@ -188,11 +188,8 @@ use PKP\plugins\PluginRegistry;
                     return true;
                 }
 
-                $issues = $this->readFile($xmlFile);
-                $issues->save( $context );
+                $this->readFile($xmlFile, $context);
 
-                $this->cliToolkit->getCLIImportResult($deployment);
-                $this->cliToolkit->getCLIProblems($deployment);
                 return true;
             default:
                 $this->usage($scriptName);
@@ -200,17 +197,30 @@ use PKP\plugins\PluginRegistry;
         }
     }
 
-    public function readFile($xmlFile) {
+    public function readFile($xmlFile, $context) {
         $dom = new \DOMDocument();
-        $dom->load($xmlFile);
+        if(!$dom->load($xmlFile, LIBXML_PARSEHUGE)) {
+            echo "ERR\tCannot load XML file";
+        }
         if($dom->getRootNode()->nodeName == 'issue') {
             $issue = new IssueElement($dom->getRootNode());
-            return $issue;
+            $issue->save($context);
         } else {
             foreach($dom->childNodes as $ch) {
                 if($ch->nodeName == "issue") {
                     $issue = new IssueElement($ch);
-                    return $issue;
+                    $issue->save($context);
+                } elseif($ch->nodeName == 'issues') {
+                    foreach($ch->childNodes as $c) {
+                        if($c->nodeName == 'issue') {
+                            $issue = new IssueElement($c);
+                            $issue->save($context);
+                        } else {
+                            echo "WARN\t{$ch->nodeName} invalid issues-> node";
+                        }
+                    }
+                } else {
+                    echo "WARN\t{$ch->nodeName} invalid root node";
                 }
             }
         }

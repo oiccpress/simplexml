@@ -4,6 +4,7 @@ namespace APP\plugins\importexport\simplexml\elements;
 
 use APP\facades\Repo;
 use DOMElement;
+use Illuminate\Support\Facades\DB;
 
 class IssueElement {
 
@@ -26,7 +27,7 @@ class IssueElement {
                     $this->articles = [];
                     foreach($child->childNodes as $subnode) {
                         if($subnode->nodeName == 'article') {
-                            $this->articles[] = new ArticleElement($subnode);
+                            // $this->articles[] = new ArticleElement($subnode);
                         }
                     }
                     break;
@@ -85,16 +86,27 @@ class IssueElement {
             // Create issue
             $issue = Repo::issue()->newDataObject();
             $issue->setJournalId($context->getId());
-            $issue->setVolume($this->volume);
-            $issue->setNumber($this->number);
-            $issue->setYear($this->year);
-            $issue->setPublished(1);
-
-            $issueId = Repo::issue()->add($issue);
+        
         } else {
             $issue = $foundIssues->first();
             $issueId = $issue->getId();
         }
+
+        $issue->setVolume($this->volume);
+        $issue->setNumber($this->number);
+        $issue->setYear($this->year);
+        $issue->setPublished(1);
+        $issue->setDatePublished($this->date_published);
+
+        if(count($foundIssues) == 0) {
+            $issueId = Repo::issue()->add($issue);
+        } else {
+            Repo::issue()->dao->update($issue);
+        }
+
+        // Update Seqence!
+        $pos = floatval( (99-$this->volume) . '.' . $this->number );
+        echo "I\t" . $issueId . "\t". $this->volume . "\t" . $this->number . "\t" . $pos . "\n";
 
         // Filter save command down!
         $savedSections = [];

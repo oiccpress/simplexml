@@ -13,7 +13,7 @@ use PKP\file\TemporaryFileManager;
 
 class FileElement {
 
-    public $file_id, $file_name, $genre, $extension;
+    public $file_id, $file_name, $genre, $extension, $old_views;
     private $file_contents;
 
     public function __debugInfo(){
@@ -40,6 +40,11 @@ class FileElement {
                     if($child->childNodes[0]->nodeName == 'embed') {
                         $this->file_contents = $child->childNodes[0]->nodeValue;
                     }
+                    if($child->getAttribute("downloads")) {
+                        $this->old_views = intval( $child->getAttribute("downloads") );
+                    }
+                    break;
+                case '#text':
                     break;
                 default:
                     echo "WARN: unknown nodeName for file " . $child->nodeName . "\n";
