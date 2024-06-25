@@ -1,6 +1,6 @@
 <?php
 
-namespace APP\plugins\importexport\simplexml\elements;
+namespace APP\plugins\importexport\simpleXML\elements;
 
 use APP\core\Services;
 use APP\facades\Repo;

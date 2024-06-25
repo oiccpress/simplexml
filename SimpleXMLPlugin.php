@@ -8,10 +8,11 @@
  *
  */
 
-namespace APP\plugins\importexport\simplexml;
+namespace APP\plugins\importexport\simpleXML;
 
 use APP\core\Application;
-use APP\plugins\importexport\simplexml\elements\IssueElement;
+use APP\facades\Repo;
+use APP\plugins\importexport\simpleXML\elements\IssueElement;
 use APP\template\TemplateManager;
 use PKP\core\JSONMessage;
 use PKP\file\TemporaryFileManager;
@@ -167,6 +168,30 @@ use PKP\plugins\PluginRegistry;
         PluginRegistry::loadAllPlugins();
 
         $xmlFile = $cliDeployment->xmlFile;
+
+        if($xmlFile == 'sortissues') {
+            echo "sort issues go! " . $contextPath . "\n";
+            $collector = Repo::issue()->getCollector()
+                ->filterByContextIds([$context->getId()]);
+            $rawIssues = $collector->getMany();
+            $issues = [];
+
+            foreach($rawIssues as $issue) {
+                $issues[ ($issue->getVolume() * 100) + $issue->getNumber() ] = $issue;
+            }
+            krsort($issues);
+            var_dump(array_keys($issues));
+
+
+            $i = 0;
+            foreach($issues as $issue) {
+                Repo::issue()->dao->moveCustomIssueOrder($context->getId(), $issue->getId(), $i);
+                $i += 1;
+            }
+            echo "done\n";
+            return true;
+        }
+
         if ($xmlFile && $this->isRelativePath($xmlFile)) {
             $xmlFile = PWD . '/' . $xmlFile;
         }

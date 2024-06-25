@@ -1,6 +1,6 @@
 <?php
 
-namespace APP\plugins\importexport\simplexml\elements;
+namespace APP\plugins\importexport\simpleXML\elements;
 
 use APP\facades\Repo;
 use DOMElement;
@@ -17,9 +17,11 @@ class AuthorElement {
 
         foreach($element->childNodes as $child) {
             switch($child->nodeName) {
+                case 'givenname':
                 case 'givenName':
                     $this->givenName = $child->nodeValue;
                     break;
+                case 'familyname':
                 case 'familyName':
                     $this->familyName = $child->nodeValue;
                     break;

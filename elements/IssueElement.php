@@ -1,6 +1,6 @@
 <?php
 
-namespace APP\plugins\importexport\simplexml\elements;
+namespace APP\plugins\importexport\simpleXML\elements;
 
 use APP\facades\Repo;
 use DOMElement;
@@ -27,7 +27,7 @@ class IssueElement {
                     $this->articles = [];
                     foreach($child->childNodes as $subnode) {
                         if($subnode->nodeName == 'article') {
-                            // $this->articles[] = new ArticleElement($subnode);
+                            $this->articles[] = new ArticleElement($subnode);
                         }
                     }
                     break;
@@ -94,6 +94,12 @@ class IssueElement {
 
         $issue->setVolume($this->volume);
         $issue->setNumber($this->number);
+        if($this->volume) {
+            $issue->setShowVolume(true);
+        }
+        if($this->number) {
+            $issue->setShowNumber(true);
+        }
         $issue->setYear($this->year);
         $issue->setPublished(1);
         $issue->setDatePublished($this->date_published);
