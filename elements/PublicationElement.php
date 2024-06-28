@@ -3,6 +3,7 @@
 namespace APP\plugins\importexport\simpleXML\elements;
 
 use APP\facades\Repo;
+use APP\plugins\importexport\simpleXML\SimpleXMLPlugin;
 use DOMElement;
 use PKP\db\DAORegistry;
 
@@ -65,7 +66,7 @@ class PublicationElement {
                     
                     break;
                 default:
-                    echo "WARN: unknown nodeName for article " . $child->nodeName . "\n";
+                    SimpleXMLPlugin::log([ 'UE', 'publication', $child->nodeName ]);
             }
         }
     }
@@ -77,7 +78,7 @@ class PublicationElement {
                     $this->pages = $child->nodeValue;
                     break;
                 default:
-                    echo "WARN: unknown nodeName for article galley " . $child->nodeName . "\n";
+                    SimpleXMLPlugin::log([ 'UE', 'articlegalley', $child->nodeName ]);
             }
         }
     }
@@ -125,7 +126,7 @@ class PublicationElement {
         } else {
             $publicationId = Repo::publication()->dao->insert($publication);
         }
-        echo "P\t" . $publicationId . "\n";
+        SimpleXMLPlugin::log([ 'PUB', $publicationId, $this->title ]);
 
         foreach($this->authors as $i => $author) {
             $author->save($i, $publication);

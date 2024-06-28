@@ -32,6 +32,17 @@ use PKP\plugins\PluginRegistry;
         return 'SimpleXMLPlugin';
     }
 
+    public static function log($items) {
+        // TODO: if it's web don't just output
+        if($items[0] == 'UE') {
+            return; // TODO: allow for filtering of this output
+        }
+        echo implode("\t", $items) . "\n";
+        if($items[0] == 'FILEWARN') {
+            // exit(); // TODO: allow for changing what will kill off the process
+        }
+    }
+
     /**
      * Provide a name for this plugin
      *
@@ -223,12 +234,14 @@ use PKP\plugins\PluginRegistry;
     }
 
     public function readFile($xmlFile, $context) {
+        $old_error = error_reporting(E_ALL);
         $dom = new \DOMDocument();
         if(!$dom->load($xmlFile, LIBXML_PARSEHUGE)) {
-            echo "ERR\tCannot load XML file";
+            static::log([ 'ERROR', 'Cannot Read XML File' ]);
         }
+        error_reporting($old_error);
         if($dom->getRootNode()->nodeName == 'issue') {
-            $issue = new IssueElement($dom->getRootNode());
+            $issue = new IssueElement($doWm->getRootNode());
             $issue->save($context);
         } else {
             foreach($dom->childNodes as $ch) {
@@ -241,11 +254,11 @@ use PKP\plugins\PluginRegistry;
                             $issue = new IssueElement($c);
                             $issue->save($context);
                         } else {
-                            echo "WARN\t{$ch->nodeName} invalid issues-> node";
+                            static::log([ 'WARN', 'Invalid Node', $c->nodeName ]);
                         }
                     }
                 } else {
-                    echo "WARN\t{$ch->nodeName} invalid root node";
+                    static::log([ 'WARN', 'Invalid Node', $ch->nodeName ]);
                 }
             }
         }

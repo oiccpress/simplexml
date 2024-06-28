@@ -5,6 +5,7 @@ namespace APP\plugins\importexport\simpleXML\elements;
 use APP\core\Services;
 use APP\facades\Repo;
 use APP\file\PublicFileManager;
+use APP\plugins\importexport\simpleXML\SimpleXMLPlugin;
 use DOMElement;
 use Illuminate\Support\Facades\DB;
 use PKP\core\PKPApplication;
@@ -50,7 +51,7 @@ class CoverElement {
                     $this->file_contents = $child->childNodes[0]->nodeValue;
                     break;
                 default:
-                    echo "WARN: unknown nodeName for file " . $child->nodeName . "\n";
+                    SimpleXMLPlugin::log([ 'UE', 'cover', $child->nodeName ]);
             }
         }
     }

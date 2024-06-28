@@ -3,6 +3,7 @@
 namespace APP\plugins\importexport\simpleXML\elements;
 
 use APP\facades\Repo;
+use APP\plugins\importexport\simpleXML\SimpleXMLPlugin;
 use DOMElement;
 
 class SectionElement {
@@ -18,7 +19,7 @@ class SectionElement {
                     $this->title = $child->nodeValue;
                     break;
                 default:
-                    echo "WARN: unknown nodeName for section " . $child->nodeName . "\n";
+                    SimpleXMLPlugin::log([ 'UE', 'section', $child->nodeName ]);
             }
         }
     }

@@ -3,6 +3,7 @@
 namespace APP\plugins\importexport\simpleXML\elements;
 
 use APP\facades\Repo;
+use APP\plugins\importexport\simpleXML\SimpleXMLPlugin;
 use DOMElement;
 use Illuminate\Support\Facades\DB;
 use PKP\workflow\WorkflowStageDAO;
@@ -31,7 +32,7 @@ class ArticleElement {
         }
 
         foreach($element->childNodes as $child) {
-            switch($child->nodeName) {
+            switch(strval($child->nodeName)) {
                 case 'publication':
                     $this->publication = new PublicationElement($child);
                     break;
@@ -42,12 +43,18 @@ class ArticleElement {
                         if($file->old_views) {
                             $this->old_file_views = $file->old_views;
                         }
+                    } else {
+                        // tostring the xml element for output
+                        $tmp_doc = new \DOMDocument();
+                        $tmp_doc->appendChild($tmp_doc->importNode($child,true));        
+                        $txt = $tmp_doc->saveHTML();
+                        SimpleXMLPlugin::log([ 'FILEWARN', 'article->submission_file', 'INVALID', $txt ]);
                     }
                     break;
                 case '#text':
                     break;
                 default:
-                    echo "WARN: unknown nodeName for article " . $child->nodeName . "\n";
+                    SimpleXMLPlugin::log([ 'UE', 'article', $child->nodeName ]);
             }
         }
     }
@@ -80,14 +87,26 @@ class ArticleElement {
         $publicationId = $this->publication->save($context, $submission, $publication, $sections, $issue, $this);
         $submission->setData('currentPublicationId', $publicationId);
 
+        // Sort files
+        $html_file = null;
+        foreach($this->files as $k => $file) {
+            if(strtoupper($file->extension) == 'HTML') {
+                $html_file = $file->save($context, $submission, $publicationId);
+                unset($this->files[$k]);
+            }
+        }
+
         // Add article elements in
         foreach($this->files as $file) {
+            if($file->stage == 'dependent') {
+                $file->parent_file = $html_file;
+            }
             $file->save($context, $submission, $publicationId);
         }
 
         Repo::submission()->dao->update($submission);
 
-        echo "A\t" . $submission->getId() . "\n";
+        SimpleXMLPlugin::log([ 'ART', $submission->getId(), $this->publication->title ]);
 
     }
 

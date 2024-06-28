@@ -3,6 +3,7 @@
 namespace APP\plugins\importexport\simpleXML\elements;
 
 use APP\facades\Repo;
+use APP\plugins\importexport\simpleXML\SimpleXMLPlugin;
 use DOMElement;
 
 class AuthorElement {
@@ -16,7 +17,7 @@ class AuthorElement {
         $this->primaryContact = $element->getAttribute('corresponding') === 'true';
 
         foreach($element->childNodes as $child) {
-            switch($child->nodeName) {
+            switch(strval($child->nodeName)) {
                 case 'givenname':
                 case 'givenName':
                     $this->givenName = $child->nodeValue;
@@ -38,7 +39,7 @@ class AuthorElement {
                     $this->orcid = $child->nodeValue;
                     break;
                 default:
-                    echo "WARN: unknown nodeName for article " . $child->nodeName . "\n";
+                    SimpleXMLPlugin::log([ 'UE', 'author', $child->nodeName ]);
             }
         }
     }

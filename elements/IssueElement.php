@@ -3,6 +3,7 @@
 namespace APP\plugins\importexport\simpleXML\elements;
 
 use APP\facades\Repo;
+use APP\plugins\importexport\simpleXML\SimpleXMLPlugin;
 use DOMElement;
 use Illuminate\Support\Facades\DB;
 
@@ -13,7 +14,7 @@ class IssueElement {
     public function __construct(DOMElement $element) {
 
         foreach($element->childNodes as $child) {
-            switch($child->nodeName) {
+            switch(strval($child->nodeName)) {
                 case 'issue_identification':
                     $this->process_issue_idenitification($child);
                     break;
@@ -38,8 +39,10 @@ class IssueElement {
                             $this->sections[] = new SectionElement($subnode);
                         }
                     }
+                case '#text':
+                    break;
                 default:
-                    echo "WARN: unknown nodeName for issue " . $child->nodeName . "\n";
+                    SimpleXMLPlugin::log([ 'UE', 'issue', $child->nodeName ]);
             }
         }
 
@@ -59,7 +62,7 @@ class IssueElement {
                     $this->number = $child->nodeValue;
                     break;
                 default:
-                    echo "WARN: unknown nodeName for issue identification " . $child->nodeName . "\n";
+                    SimpleXMLPlugin::log([ 'UE', 'issueidentification', $child->nodeName ]);
             }
         }
 
@@ -112,7 +115,7 @@ class IssueElement {
 
         // Update Seqence!
         $pos = floatval( (99-$this->volume) . '.' . $this->number );
-        echo "I\t" . $issueId . "\t". $this->volume . "\t" . $this->number . "\t" . $pos . "\n";
+        SimpleXMLPlugin::log([ 'ISSUE', $issueId, $this->volume, $this->number ]);
 
         // Filter save command down!
         $savedSections = [];
