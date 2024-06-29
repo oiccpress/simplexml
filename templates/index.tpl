@@ -24,8 +24,6 @@
 <div id="importExportTabs">
 	<ul>
 		<li><a href="#import-tab">{translate key="plugins.importexport.native.import"}</a></li>
-		<!-- <li><a href="#exportSubmissions-tab">{translate key="plugins.importexport.native.exportSubmissions"}</a></li>
-		<li><a href="#exportIssues-tab">{translate key="plugins.importexport.native.exportIssues"}</a></li> -->
 	</ul>
 	<div id="import-tab">
 		<script type="text/javascript">
@@ -59,79 +57,6 @@
 			<p><span class="formRequired">{translate key="common.requiredField"}</span></p>
 		</form>
 	</div>
-	<!--<div id="exportSubmissions-tab">
-		<script type="text/javascript">
-			$(function() {ldelim}
-				// Attach the form handler.
-				$('#exportXmlForm').pkpHandler('$.pkp.controllers.form.AjaxFormHandler');
-			{rdelim});
-		</script>
-		<form id="exportXmlForm" class="pkp_form" action="{plugin_url path="exportSubmissionsBounce"}" method="post">
-			{csrf}
-			{fbvFormArea id="submissionsXmlForm"}
-				<submissions-list-panel
-					v-bind="components.submissions"
-					@set="set"
-				>
-
-					<template v-slot:item="{ldelim}item{rdelim}">
-						<div class="listPanel__itemSummary">
-							<label>
-								<input
-									type="checkbox"
-									name="selectedSubmissions[]"
-									:value="item.id"
-									v-model="selectedSubmissions"
-								/>
-								<span
-									class="listPanel__itemSubTitle"
-									v-strip-unsafe-html="localize(
-										item.publications.find(p => p.id == item.currentPublicationId).fullTitle,
-										item.publications.find(p => p.id == item.currentPublicationId).locale
-									)"
-								>
-								</span>
-							</label>
-							<pkp-button element="a" :href="item.urlWorkflow" style="margin-left: auto;">
-								{{ __('common.view') }}
-							</pkp-button>
-						</div>
-					</template>
-				</submissions-list-panel>
-				{fbvFormSection}
-					<pkp-button :disabled="!components.submissions.itemsMax" @click="toggleSelectAll">
-						<template v-if="components.submissions.itemsMax && selectedSubmissions.length >= components.submissions.itemsMax">
-							{translate key="common.selectNone"}
-						</template>
-						<template v-else>
-							{translate key="common.selectAll"}
-						</template>
-					</pkp-button>
-					<pkp-button @click="submit('#exportXmlForm')" type="submit">
-						{translate key="plugins.importexport.native.exportSubmissions"}
-					</pkp-button>
-				{/fbvFormSection}
-			{/fbvFormArea}
-		</form>
-	</div>-->
-	<!--
-	<div id="exportIssues-tab">
-		<script type="text/javascript">
-			$(function() {ldelim}
-				// Attach the form handler.
-				$('#exportIssuesXmlForm').pkpHandler('$.pkp.controllers.form.AjaxFormHandler');
-			{rdelim});
-		</script>
-		<form id="exportIssuesXmlForm" class="pkp_form" action="{plugin_url path="exportIssuesBounce"}" method="post">
-			{csrf}
-			{fbvFormArea id="issuesXmlForm"}
-				{capture assign="issuesListGridUrl"}{url router=\PKP\core\PKPApplication::ROUTE_COMPONENT component="grid.issues.ExportableIssuesListGridHandler" op="fetchGrid" escape=false}{/capture}
-				{load_url_in_div id="issuesListGridContainer" url=$issuesListGridUrl}
-
-				{fbvFormButtons submitText="plugins.importexport.native.exportIssues" hideCancel="true"}
-			{/fbvFormArea}
-		</form>
-	</div>-->
 </div>
 
 {/block}

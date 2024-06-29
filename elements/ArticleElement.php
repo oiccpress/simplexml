@@ -48,7 +48,7 @@ class ArticleElement {
                         $tmp_doc = new \DOMDocument();
                         $tmp_doc->appendChild($tmp_doc->importNode($child,true));        
                         $txt = $tmp_doc->saveHTML();
-                        SimpleXMLPlugin::log([ 'FILEWARN', 'article->submission_file', 'INVALID', $txt ]);
+                        SimpleXMLPlugin::log([ 'FILEWARN', 'article->submission_file', $txt ]);
                     }
                     break;
                 case '#text':

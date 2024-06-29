@@ -29,3 +29,6 @@ msgstr ""
 "\n"
 "{$scriptName} {$pluginName} import [xmlFileName] [journal_path]\n"
 "\tissue_id [issueId] section_abbrev [abbrev]\n"
+
+msgid "plugins.importexport.simpleXML.results"
+msgstr "Import Results"

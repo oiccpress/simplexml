@@ -14,6 +14,7 @@ use APP\core\Application;
 use APP\facades\Repo;
 use APP\plugins\importexport\simpleXML\elements\IssueElement;
 use APP\template\TemplateManager;
+use Illuminate\Support\Facades\DB;
 use PKP\core\JSONMessage;
 use PKP\file\TemporaryFileManager;
 use PKP\plugins\GenericPlugin;
@@ -28,18 +29,24 @@ use PKP\plugins\PluginRegistry;
     protected $isResultManaged = false;
     protected $result = null;
 
+    static $ajax = false;
+    static $log = [];
+
     public function getName() {
         return 'SimpleXMLPlugin';
     }
 
     public static function log($items) {
-        // TODO: if it's web don't just output
-        if($items[0] == 'UE') {
-            return; // TODO: allow for filtering of this output
-        }
-        echo implode("\t", $items) . "\n";
-        if($items[0] == 'FILEWARN') {
-            // exit(); // TODO: allow for changing what will kill off the process
+        if(static::$ajax) {
+            static::$log[] = $items;
+        } else {
+            if($items[0] == 'UE') {
+                return; // TODO: allow for filtering of this output
+            }
+            echo implode("\t", $items) . "\n";
+            if($items[0] == 'FILEWARN') {
+                // exit(); // TODO: allow for changing what will kill off the process
+            }
         }
     }
 
@@ -135,7 +142,7 @@ use PKP\plugins\PluginRegistry;
 
                 $tab = $this->getBounceTab(
                     $request,
-                    __('plugins.importexport.native.results'),
+                    __('plugins.importexport.simpleXML.results'),
                     'import',
                     ['temporaryFileId' => $tempFileId]
                 );
@@ -148,14 +155,28 @@ use PKP\plugins\PluginRegistry;
                     throw new \Exception('CSRF mismatch!');
                 }
                 $temporaryFilePath = $this->getImportedFilePath($request->getUserVar('temporaryFileId'), $user);
+                static::$ajax = true;
                 
-                $result = $this->getImportTemplateResult($filter, $xmlString, $this->getDeployment(), $templateMgr);
+                DB::beginTransaction();
+                try {
+                    $this->readFile($temporaryFilePath, $context);
+                } catch(\Exception $e) {
+                    $this->log([ 'FAIL', $e->getMessage() ]);
+                }
+                DB::commit();
+
+                $templateMgr->assign('content', static::$log);
+                $json = new JSONMessage(true, $templateMgr->fetch( $this->getTemplateResource('results.tpl') ));
+                header('Content-Type: application/json');
+                $result = $json->getString();
 
                 $this->result = $result;
                 $this->isResultManaged = true;
 
                 break;
         }
+
+        return $this->result;
 
     }
 
@@ -189,6 +210,11 @@ use PKP\plugins\PluginRegistry;
 
             foreach($rawIssues as $issue) {
                 $issues[ ($issue->getVolume() * 100) + $issue->getNumber() ] = $issue;
+                if(!$issue->getDatePublished()) {
+                    // Allow issues to be marked as current - Fixes issues
+                    $issue->setDatePublished(date('Y-m-d'));
+                    Repo::issue()->dao->update($issue);
+                }
             }
             krsort($issues);
             var_dump(array_keys($issues));
