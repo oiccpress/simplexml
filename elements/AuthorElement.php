@@ -65,7 +65,7 @@ class AuthorElement {
         $author->setGivenName($this->givenName, 'en');
         $author->setFamilyName($this->familyName, 'en');
         $author->setAffiliation($this->affiliation, 'en');
-        $author->setEmail($this->email ?: Config::getVar('email', 'default_envelope_sender')); // Some value is required to satisfy the system requirements
+        $author->setEmail($this->email ?? Config::getVar('email', 'default_envelope_sender') ?? 'noreply@oiccpress.com'); // Some value is required to satisfy the system requirements
         $author->setOrcid($this->orcid);
 
         if(count($foundAuthors)) {
