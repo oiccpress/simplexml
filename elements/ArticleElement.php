@@ -11,9 +11,9 @@ use PKP\workflow\WorkflowStageDAO;
 class ArticleElement {
 
     public $files = [];
-    public $publication, $old_id;
+    public $publication, $old_id, $doi_id, $dor_id;
 
-    public $old_file_views, $old_views, $date_received, $date_accepted, $manuscript_id;
+    public $old_file_views, $old_views, $date_received, $date_accepted, $manuscript_id, $old_permalink;
 
     public function __construct(DOMElement $element) {
 
@@ -33,6 +33,18 @@ class ArticleElement {
 
         foreach($element->childNodes as $child) {
             switch(strval($child->nodeName)) {
+                case 'id':
+                    switch($child->getAttribute("type")) {
+                        case 'doi':
+                            $this->doi_id = $child->nodeValue;
+                            break;
+                        case 'other::dor':
+                            $this->dor_id = $child->nodeValue;
+                            break;
+                        default:
+                            SimpleXMLPlugin::log([ 'UID', 'articleid', $child->getAttribute('type') ]);
+                    }
+                    break;
                 case 'publication':
                     $this->publication = new PublicationElement($child);
                     break;
@@ -50,6 +62,9 @@ class ArticleElement {
                         $txt = $tmp_doc->saveHTML();
                         SimpleXMLPlugin::log([ 'FILEWARN', 'article->submission_file', $txt ]);
                     }
+                    break;
+                case 'old_permalink':
+                    $this->old_permalink = $child->getAttribute('url');
                     break;
                 case '#text':
                     break;

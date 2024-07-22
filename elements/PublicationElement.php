@@ -83,6 +83,9 @@ class PublicationElement {
         }
     }
 
+    /**
+     * @param ArticleElement $articleElement
+     */
     public function save($context, $submission, $publication, $sections, $issue, $articleElement) {
         if(!$publication) {
             $publication = Repo::publication()->newDataObject();
@@ -118,6 +121,17 @@ class PublicationElement {
         }
         if($articleElement->date_accepted) {
             $publication->setData('submission_dates__accepted', $articleElement->date_accepted);
+        }
+        if($articleElement->old_permalink) {
+            $publication->setData('oldpermalink', $articleElement->old_permalink);
+        }
+
+        if($articleElement->doi_id) {
+            $publication->setStoredPubId('doi', $articleElement->doi_id);
+        }
+        
+        if($articleElement->dor_id) {
+            $publication->setStoredPubId('other::dor', $articleElement->dor_id);
         }
 
         if($publication->getId()) {

@@ -12,6 +12,7 @@ namespace APP\plugins\importexport\simpleXML;
 
 use APP\core\Application;
 use APP\facades\Repo;
+use APP\plugins\importexport\simpleXML\elements\InPressElement;
 use APP\plugins\importexport\simpleXML\elements\IssueElement;
 use APP\template\TemplateManager;
 use Illuminate\Support\Facades\DB;
@@ -276,11 +277,19 @@ use PKP\plugins\PluginRegistry;
                     $issue->save($context);
                 } elseif($ch->nodeName == 'issues') {
                     foreach($ch->childNodes as $c) {
-                        if($c->nodeName == 'issue') {
-                            $issue = new IssueElement($c);
-                            $issue->save($context);
-                        } else {
-                            static::log([ 'WARN', 'Invalid Node', $c->nodeName ]);
+                        switch($c->nodeName) {
+                            case 'issue':
+                                $issue = new IssueElement($c);
+                                $issue->save($context);
+                                break;
+                            case 'in_press':
+                            case 'in-press':
+                                $inpress = new InPressElement($c);
+                                $inpress->save($context);
+                                break;
+                            default:
+                                static::log([ 'WARN', 'Invalid Node', $c->nodeName ]);
+                                break;
                         }
                     }
                 } else {
