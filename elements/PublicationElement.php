@@ -145,8 +145,7 @@ class PublicationElement {
         foreach($this->authors as $i => $author) {
             $author->save($i, $publication);
             if($author->primaryContact) {
-                $publication->setData('primaryContactId', $author->id);
-                Repo::publication()->dao->update($publication);
+                Repo::publication()->edit($publication, [ 'primaryContactId' => $author->id ]);
             }
         }
 

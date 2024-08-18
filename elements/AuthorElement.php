@@ -52,13 +52,14 @@ class AuthorElement {
         $foundAuthors = $collection->getMany();
         if(count($foundAuthors)) {
             $author = $foundAuthors->first();
+            $this->id = $author->getId();
         } else {
             $author = Repo::author()->newDataObject();
         }
 
         $author->setData('publicationId', $publication->getId());
         if ($this->primaryContact) {
-            $author->setPrimaryContact(true);
+            $author->setPrimaryContact(1);
         }
         $author->setSequence($i);
 
