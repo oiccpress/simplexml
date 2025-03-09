@@ -143,7 +143,7 @@ class PublicationElement {
         SimpleXMLPlugin::log([ 'PUB', $publicationId, $this->title ]);
 
         foreach($this->authors as $i => $author) {
-            $author->save($i, $publication);
+            $author->save($context, $i, $publication);
             if($author->primaryContact) {
                 Repo::publication()->edit($publication, [ 'primaryContactId' => $author->id ]);
             }

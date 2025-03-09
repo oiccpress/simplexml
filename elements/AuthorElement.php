@@ -6,16 +6,18 @@ use PKP\config\Config;
 use APP\facades\Repo;
 use APP\plugins\importexport\simpleXML\SimpleXMLPlugin;
 use DOMElement;
+use PKP\userGroup\UserGroup;
 
 class AuthorElement {
 
-    public $givenName, $familyName, $affiliation, $country, $email, $orcid;
+    public $givenName, $familyName, $affiliation, $country, $email, $orcid, $userGroupName;
     public $primaryContact = false;
     public $id = null;
 
     public function __construct(DOMElement $element) {
 
         $this->primaryContact = $element->getAttribute('corresponding') === 'true';
+        $this->userGroupName = $element->getAttribute('user_group_ref');
 
         foreach($element->childNodes as $child) {
             switch(strval($child->nodeName)) {
@@ -45,7 +47,7 @@ class AuthorElement {
         }
     }
 
-    public function save($i, $publication) {
+    public function save($context, $i, $publication) {
 
         $collection = Repo::author()->getCollector()->filterByPublicationIds([  $publication->getId() ])
             ->filterByName( $this->givenName, $this->familyName );
@@ -68,6 +70,18 @@ class AuthorElement {
         $author->setAffiliation($this->affiliation, 'en');
         $author->setEmail($this->email ?? Config::getVar('email', 'default_envelope_sender') ?? 'noreply@oiccpress.com'); // Some value is required to satisfy the system requirements
         $author->setOrcid($this->orcid);
+
+        $userGroups = Repo::userGroup()->getCollector()
+            ->filterByContextIds([$context->getId()])
+            ->getMany();
+
+        foreach ($userGroups as $userGroup) {
+            if (in_array($this->userGroupName, $userGroup->getName(null))) {
+                // Found a candidate; stash it.
+                $author->setUserGroupId($userGroup->getId());
+                break;
+            }
+        }
 
         if(count($foundAuthors)) {
             Repo::author()->dao->update($author);
