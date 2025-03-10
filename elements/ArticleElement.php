@@ -56,11 +56,7 @@ class ArticleElement {
                             $this->old_file_views = $file->old_views;
                         }
                     } else {
-                        // tostring the xml element for output
-                        $tmp_doc = new \DOMDocument();
-                        $tmp_doc->appendChild($tmp_doc->importNode($child,true));        
-                        $txt = $tmp_doc->saveHTML();
-                        SimpleXMLPlugin::log([ 'FILEWARN', 'article->submission_file', $txt ]);
+                        SimpleXMLPlugin::log([ 'FILEWARN', 'article->submission_file', $file->file_name . ' ' . $file->file_id ]);
                     }
                     break;
                 case 'old_permalink':
