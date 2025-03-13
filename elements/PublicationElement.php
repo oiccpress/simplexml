@@ -9,7 +9,7 @@ use PKP\db\DAORegistry;
 
 class PublicationElement {
 
-    public $title, $abstract, $copyrightHolder, $copyrightYear, $pages, $datePublished, $section;
+    public $title, $abstract, $copyrightHolder, $copyrightYear, $pages, $datePublished, $section, $seq;
     public $authors = [];
     public $keywords = [];
     public $subjects = [];
@@ -18,6 +18,7 @@ class PublicationElement {
     public function __construct(DOMElement $element) {
         $this->datePublished = $element->getAttribute('date_published');
         $this->section = $element->getAttribute("section_ref");
+        $this->seq = $element->getAttribute("seq");
 
         foreach($element->childNodes as $child) {
             switch($child->nodeName) {
@@ -107,6 +108,10 @@ class PublicationElement {
         $publication->setData('subjects', ['en' => $this->subjects ]);
         if($this->cover) {
             $publication->setData('coverImage', $this->cover->save($context));
+        }
+
+        if($this->seq) {
+            $publication->setData('seq', $this->seq);
         }
 
         // TODO: Move this to a filter or something?
