@@ -184,6 +184,8 @@ use PKP\plugins\PluginRegistry;
     public function executeCLI($scriptName, &$args)
     {
 
+        error_reporting(E_ERROR | E_WARNING | E_COMPILE_ERROR);
+
         $contextDao = Application::getContextDAO();
         $cliDeployment = new PKPNativeImportExportCLIDeployment($scriptName, $args);
 
