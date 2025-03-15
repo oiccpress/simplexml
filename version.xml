@@ -11,7 +11,7 @@
 <version>
 	<application>simplexml</application>
 	<type>plugins.importexport</type>
-	<release>1</release>
+	<release>2.1</release>
 	<date>2024-05-22</date>
 	<lazy-load>1</lazy-load>
 	<class>SimpleXMLPlugin</class>

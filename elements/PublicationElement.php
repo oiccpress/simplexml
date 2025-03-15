@@ -14,6 +14,7 @@ class PublicationElement {
     public $keywords = [];
     public $subjects = [];
     public $cover;
+    public $citations = [];
 
     public function __construct(DOMElement $element) {
         $this->datePublished = $element->getAttribute('date_published');
@@ -65,6 +66,14 @@ class PublicationElement {
                         }
                     }
                     
+                    break;
+
+                case 'citations':
+                    foreach($child->childNodes as $author) {
+                        if($author->nodeName == 'citation') {
+                            $this->citations[] = trim($author->nodeValue);
+                        }
+                    }
                     break;
                 default:
                     SimpleXMLPlugin::log([ 'UE', 'publication', $child->nodeName ]);
@@ -137,6 +146,16 @@ class PublicationElement {
         
         if($articleElement->dor_id) {
             $publication->setStoredPubId('other::dor', $articleElement->dor_id);
+        }
+
+        if(!empty($this->citations)) {
+            $citationsString = '';
+            foreach ($this->citations as $citation) {
+                $citationsString .= $citation . "\n";
+            }
+            $publication->setData('citationsRaw', $citationsString);
+            $citationDao = DAORegistry::getDAO('CitationDAO'); /** @var CitationDAO $citationDao */
+            $citationDao->importCitations($publication->getId(), $citationsString);
         }
 
         if($publication->getId()) {

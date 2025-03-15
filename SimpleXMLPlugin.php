@@ -18,8 +18,6 @@ use APP\template\TemplateManager;
 use Illuminate\Support\Facades\DB;
 use PKP\core\JSONMessage;
 use PKP\file\TemporaryFileManager;
-use PKP\plugins\GenericPlugin;
- use PKP\plugins\Hook;
 use PKP\plugins\importexport\native\PKPNativeImportExportCLIDeployment;
 use PKP\plugins\ImportExportPlugin;
 use PKP\plugins\PluginRegistry;
