@@ -34,6 +34,10 @@ class FileElement {
         'query' => SubmissionFile::SUBMISSION_FILE_QUERY,
     ];
 
+    const GENRE_BACKUP = [
+        'Article Text' => 'Article Full Text'
+    ];
+
     public function __debugInfo(){
     
         $vars = get_object_vars($this);
@@ -58,7 +62,7 @@ class FileElement {
                     $this->extension = $child->getAttribute("extension");
                     foreach($child->childNodes as $c) {
                         if($c->nodeName == 'embed') {
-                            $this->file_contents = $c->nodeValue;
+                            $this->file_contents = trim($c->nodeValue);
                         } else {
                             SimpleXMLPlugin::log([ 'UE', $c->nodeName ]);
                         }
@@ -81,7 +85,7 @@ class FileElement {
     }
 
     public function valid() {
-        return !empty($this->file_id) && !empty($this->file_name) &&
+        return !empty($this->file_name) &&
             (strlen($this->file_contents) > 0);
     }
 
@@ -97,6 +101,24 @@ class FileElement {
                     if($name == $this->genre) {
                         $genreId = $genre->getId();
                     }
+                }
+            }
+            if(!$genreId) {
+
+                // Try a backup
+                if(array_key_exists($this->genre, static::GENRE_BACKUP)) {
+                    $this->genre = static::GENRE_BACKUP[$this->genre];
+                    $genres = $genreDao->getByContextId($context->getId());
+                    while ($genre = $genres->next()) {
+                        foreach ($genre->getName(null) as $locale => $name) {
+                            if($name == $this->genre) {
+                                $genreId = $genre->getId();
+                            }
+                        }
+                    }
+                }
+                if(!$genreId) {
+                    SimpleXMLPlugin::log([ 'UG', 'unknown genre', $this->genre ]);
                 }
             }
         }
@@ -125,7 +147,7 @@ class FileElement {
             $submissionDir = Repo::submissionFile()->getSubmissionDir($submission->getData('contextId'), $submission->getId());
             $newFileId = Services::get('file')->add(
                 $temporaryFilename,
-                $submissionDir . '/' . str_replace('.htm', '.html', $this->file_name), // uniqid() . '.' . $this->extension
+                $submissionDir . '/' . preg_replace('/\.htm$/', '.html', $this->file_name), // uniqid() . '.' . $this->extension
             );
             $fileManager = new FileManager();
             $fileManager->deleteByPath($temporaryFilename);
@@ -182,20 +204,20 @@ class FileElement {
         if($submissionFile->getId()) {
             Repo::submissionFile()->dao->update($submissionFile);
             $subId = $submissionFile->getId();
-
-            // Also update if already exists please
-            if ($submissionFile->getData('assocType') === Application::ASSOC_TYPE_REPRESENTATION) {
-                $galley = Repo::galley()->get($submissionFile->getData('assocId'));
-                if (!$galley) {
-                    throw new \Exception('Galley not found when adding submission file.');
-                }
-                if ($galley) {
-                    Repo::galley()->edit($galley, ['submissionFileId' => $submissionFile->getId()]);
-                }        
-            }
-
         } else {
             $subId = Repo::submissionFile()->add($submissionFile);
+        }
+
+        // Also update if already exists please
+        if ($this->stage !== 'dependent') {
+            $galley = Repo::galley()->get($submissionFile->getData('assocId'));
+            if (!$galley) {
+                throw new \Exception('Galley not found when adding submission file.');
+            }
+            if ($galley) {
+                Repo::galley()->edit($galley, ['submissionFileId' => $subId]);
+                SimpleXMLPlugin::log([ 'GF', 'galley_file', $subId ]);
+            }        
         }
 
         return $subId;
