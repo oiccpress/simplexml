@@ -179,6 +179,15 @@ use PKP\plugins\PluginRegistry;
 
     }
 
+    public function echoCLIError($msg, $args = null) {
+        echo PHP_EOL . PHP_EOL;
+        echo '----' . PHP_EOL;
+        echo 'ERROR: ' . $msg . PHP_EOL;
+        var_dump($args);
+        echo PHP_EOL . '----' . PHP_EOL;
+        die(-1);
+    }
+
     public function executeCLI($scriptName, &$args)
     {
 
@@ -192,7 +201,7 @@ use PKP\plugins\PluginRegistry;
 
         if (!$context) {
             if ($contextPath != '') {
-                $this->cliToolkit->echoCLIError(__('plugins.importexport.common.error.unknownContext', ['contextPath' => $contextPath]));
+                $this->echoCLIError(__('plugins.importexport.common.error.unknownContext', ['contextPath' => $contextPath]));
             }
             $this->usage($scriptName);
             return true;
@@ -239,19 +248,34 @@ use PKP\plugins\PluginRegistry;
                 $user = Application::get()->getRequest()->getUser();
 
                 if (!$user) {
-                    $this->cliToolkit->echoCLIError(__('plugins.importexport.native.error.unknownUser'));
+                    $this->echoCLIError(__('plugins.importexport.native.error.unknownUser'));
                     $this->usage($scriptName);
                     return true;
                 }
 
-                if (!file_exists($xmlFile)) {
-                    $this->cliToolkit->echoCLIError(__('plugins.importexport.common.export.error.inputFileNotReadable', ['param' => $xmlFile]));
+                if(str_contains($xmlFile, '*')) {
 
-                    $this->usage($scriptName);
-                    return true;
+                    echo "MULTI-FILE MODE" . PHP_EOL;
+
+                    foreach(glob($xmlFile) as $file) {
+
+                        echo PHP_EOL . PHP_EOL . "----" . PHP_EOL . ">>> " . $file . PHP_EOL . PHP_EOL;
+                        $this->readFile($file, $context);
+
+                    }
+
+                } else {
+
+                    if (!file_exists($xmlFile)) {
+                        $this->echoCLIError(__('plugins.importexport.common.export.error.inputFileNotReadable', ['param' => $xmlFile]));
+
+                        $this->usage($scriptName);
+                        return true;
+                    }
+
+                    $this->readFile($xmlFile, $context);
+
                 }
-
-                $this->readFile($xmlFile, $context);
 
                 return true;
             default:
@@ -268,7 +292,7 @@ use PKP\plugins\PluginRegistry;
         }
         error_reporting($old_error);
         if($dom->getRootNode()->nodeName == 'issue') {
-            $issue = new IssueElement($doWm->getRootNode());
+            $issue = new IssueElement($dom->getRootNode());
             $issue->save($context);
         } else {
             foreach($dom->childNodes as $ch) {

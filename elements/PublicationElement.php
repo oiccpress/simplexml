@@ -154,8 +154,6 @@ class PublicationElement {
                 $citationsString .= $citation . "\n";
             }
             $publication->setData('citationsRaw', $citationsString);
-            $citationDao = DAORegistry::getDAO('CitationDAO'); /** @var CitationDAO $citationDao */
-            $citationDao->importCitations($publication->getId(), $citationsString);
         }
 
         if($publication->getId()) {
@@ -171,6 +169,15 @@ class PublicationElement {
             if($author->primaryContact) {
                 Repo::publication()->edit($publication, [ 'primaryContactId' => $author->id ]);
             }
+        }
+
+        if(!empty($this->citations)) {
+            $citationsString = '';
+            foreach ($this->citations as $citation) {
+                $citationsString .= $citation . "\n";
+            }
+            $citationDao = DAORegistry::getDAO('CitationDAO'); /** @var CitationDAO $citationDao */
+            $citationDao->importCitations($publicationId, $citationsString);
         }
 
         return $publicationId;
