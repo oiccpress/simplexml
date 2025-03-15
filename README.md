@@ -12,6 +12,26 @@ if you need to make changes to your OJS files.
 
 It is a little rough around the edges, but it does work.
 
+## Usage
+
+From the root of OJS you can do an import like so:
+
+```
+php ./tools/importExport.php SimpleXMLPlugin import "./imports/journal-40089-*" inl
+```
+
+Glob style `file*` is supported
+
+## Sort Issues
+
+Sometimes importing issues can come through in a random order which causes a bit of a mess.
+
+Have no fear, we have a small solution:
+
+```
+php ./tools/importExport.php SimpleXMLPlugin import "sortissues" inl
+```
+
 ## OICC Press in collaboration with Invisible Dragon
 
 ![OICC Press in Collaboration with Invisible Dragon](https://images.invisibledragonltd.com/oicc-collab.png)
