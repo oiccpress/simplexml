@@ -219,7 +219,12 @@ use PKP\plugins\PluginRegistry;
             $issues = [];
 
             foreach($rawIssues as $issue) {
-                $issues[ ($issue->getVolume() * 100) + $issue->getNumber() ] = $issue;
+                $issueNumber = $issue->getNumber();
+                if(stripos($issueNumber, ' (') !== false) {
+                    $issueNumber = explode(' (', $issueNumber)[0];
+                }
+                echo var_export($issue->getVolume(), true) . ' x ' . var_export($issueNumber, true) . PHP_EOL;
+                $issues[ ($issue->getVolume() * 100) + $issueNumber ] = $issue;
                 if(!$issue->getDatePublished()) {
                     // Allow issues to be marked as current - Fixes issues
                     $issue->setDatePublished(date('Y-m-d'));
@@ -227,8 +232,11 @@ use PKP\plugins\PluginRegistry;
                 }
             }
             krsort($issues);
-            var_dump(array_keys($issues));
-
+            echo '---' . PHP_EOL . count($rawIssues) . PHP_EOL . '----' . PHP_EOL;
+            foreach($issues as $key => $issue) {
+                echo $key . ' - ' . $issue->getId() . PHP_EOL;
+            }
+            echo '---' . PHP_EOL;
 
             $i = 0;
             foreach($issues as $issue) {
