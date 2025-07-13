@@ -160,7 +160,7 @@ class FileElement {
         }
 
         $submissionFile->setData('submissionId', $submission->getId());
-        $submissionFile->setData('locale', $submission->getLocale());
+        $submissionFile->setData('locale', $submission->getData('locale'));
         $submissionFile->setData('genreId', $genreId);
         $submissionFile->setData('fileStage', SubmissionFile::SUBMISSION_FILE_PRODUCTION_READY); // static::STAGE_MAP[ $this->stage ] );
         $submissionFile->setData('viewable', true);

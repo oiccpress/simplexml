@@ -10,8 +10,9 @@ use PKP\userGroup\UserGroup;
 
 class AuthorElement {
 
-    public $givenName, $familyName, $affiliation, $country, $email, $orcid, $userGroupName;
+    public $givenName, $familyName, $country, $email, $orcid, $userGroupName;
     public $primaryContact = false;
+    public $affiliations = [];
     public $id = null;
 
     public function __construct(DOMElement $element) {
@@ -30,7 +31,11 @@ class AuthorElement {
                     $this->familyName = $child->nodeValue;
                     break;
                 case 'affiliation':
-                    $this->affiliation = $child->nodeValue;
+                    // TODO: Handle new style affiliations from 3.5
+                    $this->affiliations[] = Repo::affiliation()->newDataObject([
+                        'masthead' => false,
+                        'name' => ['en' => $child->nodeValue ],
+                    ]);
                     break;
                 case 'country':
                     $this->country = $child->nodeValue;
@@ -67,18 +72,18 @@ class AuthorElement {
 
         $author->setGivenName($this->givenName, 'en');
         $author->setFamilyName($this->familyName, 'en');
-        $author->setAffiliation($this->affiliation, 'en');
+        $author->setAffiliations($this->affiliations);
         $author->setEmail($this->email ?? Config::getVar('email', 'default_envelope_sender') ?? 'noreply@oiccpress.com'); // Some value is required to satisfy the system requirements
         $author->setOrcid($this->orcid);
 
-        $userGroups = Repo::userGroup()->getCollector()
-            ->filterByContextIds([$context->getId()])
-            ->getMany();
+        $userGroups = UserGroup::query()
+            ->withContextIds([$context->getId()])
+            ->get();
 
         foreach ($userGroups as $userGroup) {
-            if (in_array($this->userGroupName, $userGroup->getName(null))) {
+            if ($this->userGroupName == $userGroup->getLocalizedData('name')) {
                 // Found a candidate; stash it.
-                $author->setUserGroupId($userGroup->getId());
+                $author->setUserGroupId($userGroup->id);
                 break;
             }
         }
@@ -88,6 +93,8 @@ class AuthorElement {
         } else {
             $this->id = Repo::author()->dao->insert($author);
         }
+
+        Repo::affiliation()->saveAffiliations($author);
 
     }
 
