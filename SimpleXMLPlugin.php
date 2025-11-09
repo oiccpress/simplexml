@@ -18,6 +18,7 @@ use APP\template\TemplateManager;
 use Illuminate\Support\Facades\DB;
 use PKP\core\JSONMessage;
 use PKP\file\TemporaryFileManager;
+use PKP\plugins\Hook;
 use PKP\plugins\importexport\native\PKPNativeImportExportCLIDeployment;
 use PKP\plugins\ImportExportPlugin;
 use PKP\plugins\PluginRegistry;
@@ -208,6 +209,7 @@ use PKP\plugins\PluginRegistry;
         }
 
         PluginRegistry::loadAllPlugins();
+        Hook::add( 'Schema::get::publication', [ $this, 'addToPublicationSchema' ] );
 
         $xmlFile = $cliDeployment->xmlFile;
 
@@ -347,6 +349,26 @@ use PKP\plugins\PluginRegistry;
         // thnx https://stackoverflow.com/a/13695364/230419
         mb_substitute_character(0xFFFD);
         return htmlspecialchars_decode(htmlspecialchars($text, ENT_SUBSTITUTE, 'UTF-8'));
+    }
+
+    public function addToPublicationSchema(string $hookName, array $args)
+    {
+        $schema = &$args[0];
+
+        $schema->properties->{"oldmetrics_article_views"} = (object)[
+            'type' => 'integer',
+            'multilingual' => false,
+            'apiSummary' => true,
+            'validation' => ['nullable']
+        ];
+
+        $schema->properties->{"oldmetrics_pdf_views"} = (object)[
+            'type' => 'integer',
+            'multilingual' => false,
+            'apiSummary' => true,
+            'validation' => ['nullable']
+        ];
+
     }
 
  }
