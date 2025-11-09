@@ -17,18 +17,19 @@ class ArticleElement {
 
     public function __construct(DOMElement $element) {
 
-        if($element->getAttribute('visits')) {
-            $this->old_views = $element->getAttribute('visits');
+        if(!empty($element->getAttribute('visits'))) {
+            $this->old_views = intval(
+                str_replace(",", "", SimpleXMLPlugin::safe_value($element->getAttribute('visits'))));
         }
 
         if($element->getAttribute('date_received')) {
-            $this->date_received = $element->getAttribute('date_received');
+            $this->date_received = SimpleXMLPlugin::safe_value($element->getAttribute('date_received'));
         }
         if($element->getAttribute('date_accepted')) {
-            $this->date_accepted = $element->getAttribute('date_accepted');
+            $this->date_accepted = SimpleXMLPlugin::safe_value($element->getAttribute('date_accepted'));
         }
         if($element->getAttribute('manuscript_id')) {
-            $this->manuscript_id = $element->getAttribute('manuscript_id');
+            $this->manuscript_id = SimpleXMLPlugin::safe_value($element->getAttribute('manuscript_id'));
         }
 
         foreach($element->childNodes as $child) {
@@ -36,10 +37,10 @@ class ArticleElement {
                 case 'id':
                     switch($child->getAttribute("type")) {
                         case 'doi':
-                            $this->doi_id = $child->nodeValue;
+                            $this->doi_id = SimpleXMLPlugin::safe_value($child->nodeValue);
                             break;
                         case 'other::dor':
-                            $this->dor_id = $child->nodeValue;
+                            $this->dor_id = SimpleXMLPlugin::safe_value($child->nodeValue);
                             break;
                         default:
                             SimpleXMLPlugin::log([ 'UID', 'articleid', $child->getAttribute('type') ]);
@@ -60,7 +61,7 @@ class ArticleElement {
                     }
                     break;
                 case 'old_permalink':
-                    $this->old_permalink = $child->getAttribute('url');
+                    $this->old_permalink = SimpleXMLPlugin::safe_value($child->getAttribute('url'));
                     break;
                 case '#text':
                     break;

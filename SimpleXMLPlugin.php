@@ -339,4 +339,14 @@ use PKP\plugins\PluginRegistry;
         ]) . "\n";
     }
 
+    public static function safe_value($text)
+    {
+        $text = str_replace( "\u{100000}", "-", $text ); // This isn't picked up for some reason
+        // unsure of how it happens?
+
+        // thnx https://stackoverflow.com/a/13695364/230419
+        mb_substitute_character(0xFFFD);
+        return htmlspecialchars_decode(htmlspecialchars($text, ENT_SUBSTITUTE, 'UTF-8'));
+    }
+
  }

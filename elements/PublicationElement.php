@@ -17,17 +17,17 @@ class PublicationElement {
     public $citations = [];
 
     public function __construct(DOMElement $element) {
-        $this->datePublished = $element->getAttribute('date_published');
-        $this->section = $element->getAttribute("section_ref");
-        $this->seq = $element->getAttribute("seq");
+        $this->datePublished = SimpleXMLPlugin::safe_value($element->getAttribute('date_published'));
+        $this->section = SimpleXMLPlugin::safe_value($element->getAttribute("section_ref"));
+        $this->seq = SimpleXMLPlugin::safe_value($element->getAttribute("seq"));
 
         foreach($element->childNodes as $child) {
             switch($child->nodeName) {
                 case 'title':
-                    $this->title = $child->nodeValue;
+                    $this->title = SimpleXMLPlugin::safe_value($child->nodeValue);
                     break;
                 case 'abstract':
-                    $this->abstract = $child->nodeValue;
+                    $this->abstract = SimpleXMLPlugin::safe_value($child->nodeValue);
                     break;
                 case 'copyrightHolder':
                     $this->copyrightHolder = $child->nodeValue;
@@ -48,14 +48,14 @@ class PublicationElement {
                 case 'keywords':
                     foreach($child->childNodes as $author) {
                         if($author->nodeName == 'keyword') {
-                            $this->keywords[] = trim($author->nodeValue);
+                            $this->keywords[] = trim(SimpleXMLPlugin::safe_value($author->nodeValue));
                         }
                     }
                     break;
                 case 'subjects':
                     foreach($child->childNodes as $author) {
                         if($author->nodeName == 'subject') {
-                            $this->subjects[] = trim($author->nodeValue);
+                            $this->subjects[] = trim(SimpleXMLPlugin::safe_value($author->nodeValue));
                         }
                     }
                     break;
@@ -71,7 +71,7 @@ class PublicationElement {
                 case 'citations':
                     foreach($child->childNodes as $author) {
                         if($author->nodeName == 'citation') {
-                            $this->citations[] = trim($author->nodeValue);
+                            $this->citations[] = trim(SimpleXMLPlugin::safe_value($author->nodeValue));
                         }
                     }
                     break;
