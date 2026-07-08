@@ -306,6 +306,7 @@ use PKP\plugins\PluginRegistry;
             $issue->save($context);
         } else {
             foreach($dom->childNodes as $ch) {
+                if($ch->nodeType != XML_ELEMENT_NODE) continue;
                 if($ch->nodeName == "issue") {
                     $issue = new IssueElement($ch);
                     $issue->save($context);
