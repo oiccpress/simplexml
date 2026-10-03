@@ -78,6 +78,8 @@ class PublicationElement {
                         }
                     }
                     break;
+                case 'pages':
+                    $this->pages = SimpleXMLPlugin::safe_value($child->nodeValue);
                 default:
                     SimpleXMLPlugin::log([ 'UE', 'publication', $child->nodeName ]);
             }

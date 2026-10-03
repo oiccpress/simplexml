@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 class IssueElement {
 
     public $volume, $year, $number, $date_published, $last_modified, $articles, $sections;
-    public CoverElement $cover;
+    public CoverElement|null $cover = null;
 
     public function __construct(DOMElement $element) {
 
@@ -116,6 +116,7 @@ class IssueElement {
         $issue->setDatePublished($this->date_published);
 
         if($this->cover) {
+            $this->cover->file_name = 'issue_cover_' . $this->volume . '_' . $this->number . '.' . $this->cover->extension;
             $cover = $this->cover->save( $context );
             $issue->setCoverImage( $cover['en']['uploadName'], 'en' );
             if($cover['en']['altText']) {
@@ -136,7 +137,7 @@ class IssueElement {
         // Filter save command down!
         $savedSections = [];
         foreach($this->sections as $section) {
-            $savedSections[$section->ref] = $section->save($context);
+            $savedSections[$section->ref] = $section->save($issue, $context);
         }
         foreach($this->articles as $article) {
             $article->save($context, $savedSections, $issueId);

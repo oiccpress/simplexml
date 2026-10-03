@@ -52,7 +52,11 @@ class CoverElement {
                 case 'cover_image_alt_text':
                     $this->alt = $child->nodeValue;
                 case 'embed':
-                    $this->file_contents = $child->childNodes[0]->nodeValue;
+                    if($child->childNodes[0]){
+                        $this->file_contents = $child->childNodes[0]->nodeValue;
+                    } else {
+                        $this->file_contents = $child->nodeValue;
+                    }
                     break;
                 default:
                     SimpleXMLPlugin::log([ 'UE', 'cover', $child->nodeName ]);
