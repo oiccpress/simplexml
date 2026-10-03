@@ -33,6 +33,7 @@ class CoverElement {
         foreach($element->childNodes as $child) {
             switch($child->nodeName) {
                 case 'cover_image':
+                    $fvalue = strtolower($child->nodeValue);
                     $this->file_name = trim(
                         preg_replace(
                             "/[^a-z0-9\.\-]+/",
@@ -40,10 +41,13 @@ class CoverElement {
                             str_replace(
                                 [' ', '_', ':'],
                                 '-',
-                                strtolower($child->nodeValue)
+                                $fvalue
                             )
                         )
                     );
+                    if(stripos($fvalue, '.png') !== false) {
+                        $this->extension = 'png';
+                    }
                     break;
                 case 'cover_image_alt_text':
                     $this->alt = $child->nodeValue;

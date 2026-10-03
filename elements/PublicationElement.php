@@ -9,7 +9,7 @@ use PKP\db\DAORegistry;
 
 class PublicationElement {
 
-    public $title, $abstract, $copyrightHolder, $copyrightYear, $pages, $datePublished, $section, $seq;
+    public $title, $subtitle, $abstract, $copyrightHolder, $copyrightYear, $pages, $datePublished, $section, $seq;
     public $authors = [];
     public $keywords = [];
     public $subjects = [];
@@ -25,6 +25,9 @@ class PublicationElement {
             switch($child->nodeName) {
                 case 'title':
                     $this->title = SimpleXMLPlugin::safe_value($child->nodeValue);
+                    break;
+                case 'subtitle':
+                    $this->subtitle = SimpleXMLPlugin::safe_value($child->nodeValue);
                     break;
                 case 'abstract':
                     $this->abstract = SimpleXMLPlugin::safe_value($child->nodeValue);
@@ -117,6 +120,10 @@ class PublicationElement {
         $publication->setData('subjects', ['en' => $this->subjects ]);
         if($this->cover) {
             $publication->setData('coverImage', $this->cover->save($context));
+        }
+
+        if($this->subtitle) {
+            $publication->setData('subtitle', [ 'en' => $this->subtitle ]);
         }
 
         if($this->seq) {

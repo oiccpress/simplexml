@@ -10,11 +10,19 @@ use Illuminate\Support\Facades\DB;
 class IssueElement {
 
     public $volume, $year, $number, $date_published, $last_modified, $articles, $sections;
+    public CoverElement $cover;
 
     public function __construct(DOMElement $element) {
 
         foreach($element->childNodes as $child) {
             switch(strval($child->nodeName)) {
+                case 'covers':
+                    foreach($child->childNodes as $c) {
+                        if($c->nodeName == 'cover') {
+                            $this->cover = new CoverElement($c);
+                        }
+                    }
+                    break;
                 case 'issue_identification':
                     $this->process_issue_idenitification($child);
                     break;
@@ -106,6 +114,14 @@ class IssueElement {
         $issue->setYear($this->year);
         $issue->setPublished(1);
         $issue->setDatePublished($this->date_published);
+
+        if($this->cover) {
+            $cover = $this->cover->save( $context );
+            $issue->setCoverImage( $cover['en']['uploadName'], 'en' );
+            if($cover['en']['altText']) {
+                $issue->setCoverImageAltText( $cover['en']['altText'], 'en' );
+            }
+        }
 
         if(count($foundIssues) == 0) {
             $issueId = Repo::issue()->add($issue);
