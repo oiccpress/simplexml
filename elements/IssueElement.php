@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class IssueElement {
 
-    public $volume, $year, $number, $date_published, $last_modified, $articles, $sections;
+    public $volume, $year, $number, $date_published, $last_modified, $articles, $sections, $title;
     public CoverElement|null $cover = null;
 
     public function __construct(DOMElement $element) {
@@ -60,6 +60,9 @@ class IssueElement {
 
         foreach($element->childNodes as $child) {
             switch($child->nodeName) {
+                case 'title':
+                    $this->title = $child->nodeValue;
+                    break;
                 case 'volume':
                     $this->volume = $child->nodeValue;
                     break;
@@ -110,6 +113,10 @@ class IssueElement {
         }
         if($this->number) {
             $issue->setShowNumber(true);
+        }
+        if($this->title) {
+            $issue->setTitle($this->title, 'en');
+            $issue->setShowTitle(true);
         }
         $issue->setYear($this->year);
         $issue->setPublished(1);
