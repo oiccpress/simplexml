@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class IssueElement {
 
-    public $volume, $year, $number, $date_published, $last_modified, $articles, $sections, $title;
+    public $volume, $year, $number, $date_published, $last_modified, $articles, $sections, $title, $description;
     public CoverElement|null $cover = null;
 
     public function __construct(DOMElement $element) {
@@ -47,6 +47,10 @@ class IssueElement {
                             $this->sections[] = new SectionElement($subnode);
                         }
                     }
+                    break;
+                case 'description':
+                    $this->description = $child->nodeValue;
+                    break;
                 case '#text':
                     break;
                 default:
@@ -117,6 +121,10 @@ class IssueElement {
         if($this->title) {
             $issue->setTitle($this->title, 'en');
             $issue->setShowTitle(true);
+        }
+        if($this->description) {
+            SimpleXMLPlugin::log([ 'DS', 'issue', $this->description ]);
+            $issue->setDescription($this->description, 'en');
         }
         $issue->setYear($this->year);
         $issue->setPublished(1);
